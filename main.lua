@@ -27,7 +27,18 @@ function love.update()
 end
 
 function processInput()
-    if keyIsPressed["a"] ~= nil and keyIsPressed["a"] then
+    if getKeyPressed("a") then
         e.moveLeft = true
     end
-    if keyIsPressed
+    if getKeyPressed("d") then
+        e.moveRight = true
+    end
+end
+    
+function getKeyPressed(key)
+    if keyIsPressed["a"] ~= nil and keyIsPressed["a"] then
+        return true
+    else
+        return false
+    end
+end
