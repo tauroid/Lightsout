@@ -22,7 +22,8 @@ steph = {
     direction = 1,
     frameDelayms = 80,
     timeSinceLastFrame = 0,
-    collision = {"none",0}
+    collisions = {},
+    level = 0
 }
 
 function steph:initialise()
@@ -43,10 +44,10 @@ function steph:update(delta)
     end
     
     local rand = math.random(4000)
-    if self.curAnim.name == "idle2" and rand <= 10 then
+    if self.curAnim.name == "idle2" and rand <= 5 then
         self.curAnim = self.animations.eating
         Animation.start(self.animations.eating)
-    elseif self.curAnim.name == "idle2" and rand > 10 and rand <= 15 then
+    elseif self.curAnim.name == "idle2" and rand > 5 and rand <= 15 then
         self.curAnim = self.animations.idle
         Animation.start(self.animations.idle)
     end
@@ -90,6 +91,32 @@ function steph:doMovement()
     end
     if self.x_vel <= -.4 then
         self.x_vel = -.4
+    end
+end
+
+function steph:doPhysics()
+    if self.jumping then
+        self.y_vel = self.y_vel + g
+    end
+
+    self.collisions = self.level:checkCollision(self.x_loc-5.5,self.y_loc,self.x_vel,self.y_vel,11,20)
+   
+    if self.collisions.bottom.exists then
+        self.jumping = false
+        self.y_loc = self.collisions.bottom.correctloc
+        self.y_vel = 0
+    end
+    if self.collisions.left.exists then
+        self.x_vel = 0
+        self.x_loc = self.collisions.left.correctloc+5.5
+    end
+    if self.collisions.right.exists then
+        self.x_vel = 0
+        self.x_loc = self.collision.right.correctloc-5.5
+    end
+    if self.collisions.none then
+        self.jumping = true
+        self.stopped = false
     end
     
     self.x_loc = self.x_vel + self.x_loc
@@ -158,4 +185,3 @@ function steph:continueFixing(delta)
         end
     elseif self.curAnim.currentFrame > 15 then self.curAnim.currentFrame = 10 end
 end
-    

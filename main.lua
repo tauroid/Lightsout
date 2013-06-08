@@ -13,6 +13,7 @@ function love.load()
     level:initialise()
     e:initialise()
     esprite = e:getFrame()
+    e.level = level1
 end
 
 function love.keypressed(key)
@@ -41,7 +42,7 @@ end
 function love.update()
     if not paused then
         e:update(love.timer.getDelta())
-        doPhysics()
+        e:doPhysics()
     end
 end
 
@@ -63,25 +64,6 @@ function processInput(input)
         elseif input.pressed == 1 and input.keycode == "p" then
             paused = 1
         end
-    end
-end
-
-function doPhysics()
-    if e.jumping then
-        e.y_vel = e.y_vel + g
-    end
-    if e.jumping then
-        e.collision = level:checkCollision(e.x_loc-5.5,e.y_loc,e.x_vel,e.y_vel,11,20)
-        print(e.x_loc .. " " .. e.y_loc .. e.collision[1])
-    end
-   
-    if e.collision[1] == "bottom" then
-        e.jumping = false
-        e.y_loc = e.collision[2]
-        e.y_vel = 0
-    elseif e.collision[1] == "none" then
-        e.jumping = true
-        e.stopped = false
     end
 end
 
