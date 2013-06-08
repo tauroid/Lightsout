@@ -1,51 +1,57 @@
 require('electrician')
 
-g = .01
-
-keyIsPressed = {}
+g = .4
 
 function love.load()
     e = steph
-    esprite = love.graphics.newImage(e.img_filename)
-    esprite:setFilter("nearest","nearest")
+    e:initialise()
 end
 
 function love.keypressed(key)
-    keyIsPressed[key] = true
+    processInput{intype="key",keycode=key,pressed=1}
     print(key,"pressed")
 end
 
 function love.keyreleased(key)
-    keyIsPressed[key] = false
+    processInput{intype="key",keycode=key,pressed=0}
     print(key,"released")
 end
 
 function love.draw()
-    love.graphics.draw(esprite,e.x_loc,e.y_loc,0,4)
+    e:draw()
 end
 
 function love.update()
-    processInput()
-    e.update()
+    e:update(love.timer.getDelta())
+    doPhysics()
+    e:draw()
 end
 
-function processInput()
-    if getKeyPressed("a") or getKeyPressed("left") then
-        e.moveLeft = true
-    else
-        e.moveLeft = false
-    end
-    if getKeyPressed("d") or getKeyPressed("right") then
-        e.moveRight = true
-    else
-        e.moveRight = false
+function processInput(input)
+    if input.intype == "key" then
+        if input.keycode == "escape" then love.event.quit() end
+        if input.pressed == 1 and input.keycode == "a" or input.keycode == "left" then
+            e:moveLeft()
+        elseif input.pressed == 0 and input.keycode == "a" or input.keycode == "left" then
+            e.movingLeft = false
+        end
+        if input.pressed == 1 and input.keycode == "d" or input.keycode == "right" then
+            e:moveRight()
+        elseif input.pressed == 0 and input.keycode == "d" or input.keycode == "right" then
+            e.movingRight = false
+        end
+        if input.keycode == " " and input.pressed == 1 then
+            e:jump()
+        end
     end
 end
-    
-function getKeyPressed(key)
-    if keyIsPressed[key] ~= nil and keyIsPressed[key] then
-        return true
-    else
-        return false
+
+function doPhysics()
+    if e.jumping then
+        e.y_vel = e.y_vel + g
+    end
+    if e.y_loc >= 100 then
+        e.jumping = false
+        e.y_loc = 100
     end
 end
