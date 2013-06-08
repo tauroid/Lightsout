@@ -1,8 +1,8 @@
 steph = {
-    img_filename = 'steph_r1.png',
+    img_filename = 'Right_Walk/steph_r1.png',
     x_loc = 0,
     y_loc = 0,
-    x_vel = 0,
+    x_vel = 0.5,
     y_vel = 0,
     jumping = false,
     moveLeft = false,
@@ -14,18 +14,28 @@ function steph.update()
 end
 
 function steph.doMovement()
-    if moveLeft then
-        steph.x_vel = steph.x_vel - 0.1
+    if steph.moveLeft then
+        steph.x_vel = steph.x_vel - 1
     end
-    if moveRight then
-        steph.x_vel = steph.x_vel + 0.1
+    if steph.moveRight then
+        steph.x_vel = steph.x_vel + 1
     end
     
     -- Friction constant
-    if moveLeft and moveRight then
+    if steph.moveLeft and steph.moveRight then
+        steph.x_vel = steph.x_vel * 0.8
+    end
+    if not steph.moveLeft and not steph.moveRight then
         steph.x_vel = steph.x_vel * 0.8
     end
     
+    -- Cap speed
+    if steph.x_vel >= 2 then
+        steph.x_vel = 2
+    end
+    if steph.x_vel <= -2 then
+        steph.x_vel = -2
+    end
     if e.jumping then
         steph.y_vel = .01 + steph.y_vel
     end

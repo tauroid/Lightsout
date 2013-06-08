@@ -12,10 +12,12 @@ end
 
 function love.keypressed(key)
     keyIsPressed[key] = true
+    print(key,"pressed")
 end
 
 function love.keyreleased(key)
     keyIsPressed[key] = false
+    print(key,"released")
 end
 
 function love.draw()
@@ -23,20 +25,25 @@ function love.draw()
 end
 
 function love.update()
+    processInput()
     e.update()
 end
 
 function processInput()
-    if getKeyPressed("a") then
+    if getKeyPressed("a") or getKeyPressed("left") then
         e.moveLeft = true
+    else
+        e.moveLeft = false
     end
-    if getKeyPressed("d") then
+    if getKeyPressed("d") or getKeyPressed("right") then
         e.moveRight = true
+    else
+        e.moveRight = false
     end
 end
     
 function getKeyPressed(key)
-    if keyIsPressed["a"] ~= nil and keyIsPressed["a"] then
+    if keyIsPressed[key] ~= nil and keyIsPressed[key] then
         return true
     else
         return false
