@@ -5,10 +5,16 @@ function Animation.generate(foldername,frames)
     local pics = {}
     local frameno = 0
     local framenumber = 0
+    local nostart = 0
+    local noend = 0
     for i=1,table.getn(dir) do
-        frameno = tonumber(string.match(dir[i],'[0-9]'))
-        print("Trying " .. dir[i])
-        print(frameno)
+        nostart,noend = string.find(dir[i],"%d+")
+        if nostart ~= nil then
+            frameno = tonumber(string.sub(dir[i],nostart,noend))
+        else
+            frameno = 0
+        end
+
         if string.find(dir[i],'png') and frameno > 0 then
             pics[tonumber(frameno)] = dir[i]
             if frameno > framenumber then framenumber = frameno end
@@ -25,8 +31,8 @@ function Animation.generate(foldername,frames)
     end
 end
 
-function Animation.start(currentFrame)
-    currentFrame = 1
+function Animation.start(anim)
+    anim.currentFrame = 1
 end
 
 -- Steps the frame forwards
