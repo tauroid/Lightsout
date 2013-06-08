@@ -2,10 +2,20 @@ require('electrician')
 
 g = .01
 
+keyIsPressed = {}
+
 function love.load()
-    e = electrician
+    e = steph
     esprite = love.graphics.newImage(e.img_filename)
     esprite:setFilter("nearest","nearest")
+end
+
+function love.keypressed(key)
+    keyIsPressed[key] = true
+end
+
+function love.keyreleased(key)
+    keyIsPressed[key] = false
 end
 
 function love.draw()
@@ -13,7 +23,11 @@ function love.draw()
 end
 
 function love.update()
-    e.y_vel = g + e.y_vel
-    e.x_loc = e.x_vel + e.x_loc
-    e.y_loc = e.y_vel + e.y_loc
+    e.update()
 end
+
+function processInput()
+    if keyIsPressed["a"] ~= nil and keyIsPressed["a"] then
+        e.moveLeft = true
+    end
+    if keyIsPressed
