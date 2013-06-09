@@ -12,6 +12,10 @@ steph = {
     y_loc = 10,
     x_vel = 0.5,
     y_vel = 0,
+    width = 5,
+    height = 15,
+    x_offset = 3,
+    y_offset = 5,
     jumping = false,
     movingLeft = false,
     movingRight = false,
@@ -99,20 +103,20 @@ function steph:doPhysics()
         self.y_vel = self.y_vel + g
     end
 
-    self.collisions = self.level:checkCollision(self.x_loc-5.5,self.y_loc,self.x_vel,self.y_vel,11,20)
+    self.collisions = self.level:checkCollision(self.x_loc-5.5+self.x_offset,self.y_loc+self.y_offset,self.x_vel,self.y_vel,self.width,self.height)
    
     if self.collisions.bottom.exists then
         self.jumping = false
-        self.y_loc = self.collisions.bottom.correctloc
+        self.y_loc = self.collisions.bottom.correctloc-self.y_offset
         self.y_vel = 0
     end
     if self.collisions.left.exists then
         self.x_vel = 0
-        self.x_loc = self.collisions.left.correctloc+5.5
+        self.x_loc = self.collisions.left.correctloc+5.5-self.x_offset
     end
     if self.collisions.right.exists then
         self.x_vel = 0
-        self.x_loc = self.collision.right.correctloc-5.5
+        self.x_loc = self.collision.right.correctloc-5.5+self.x_offset
     end
     if self.collisions.none then
         self.jumping = true
@@ -138,7 +142,7 @@ end
 function steph:jump()
     if not self.jumping then
         self.jumping = true
-        self.y_vel = -1
+        self.y_vel = -1.2
         Animation.start(self.animations.jumping)
     end
 end
@@ -163,6 +167,7 @@ end
 function steph:startFixing()
     if not self.fixing and not self.jumping then
         self.fixing = true
+        self.x_vel = 0
         Animation.start(self.animations.fixing)
         self.curAnim = self.animations.fixing
     end
