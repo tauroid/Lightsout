@@ -55,6 +55,7 @@ function love.update()
         level:update()
         if level.play then
             level.play = false
+            levelno = 1
             enterGame()
             loadLevel(level1) 
         end
@@ -64,7 +65,10 @@ end
 function processInput(input)
     if level.leveltype == "level" then
         if input.intype == "key" then
-            if input.keycode == "escape" then level = mainmenu end
+            if input.keycode == "escape" then
+                level = mainmenu
+                levelno = 1
+            end
             if input.pressed == 1 and (input.keycode == "a" or input.keycode == "left") then
                 e:moveLeft()
             elseif input.pressed == 0 and (input.keycode == "a" or input.keycode == "left") then
@@ -149,9 +153,14 @@ function updateLevel()
         levelno = levelno + 1
         if levelno <= table.getn(levels) then
             print("going to level " .. levelno)
-            local nextlevel = levels[levelno]
             hud:initialise()
-            loadLevel(nextlevel)
+            loadLevel(levels[levelno])
+            return
+        elseif levelno > table.getn(levels) then
+            hud:initialise()
+            levelno = 1
+            loadLevel(levels[levelno])
+            return
         end
     end
     local delta = love.timer.getDelta()

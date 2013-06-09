@@ -226,6 +226,7 @@ function level3:initialise(player)
     self.nextlevel = false
     self.leveltype = "level"
     self.hasstairs = true
+    self.gameover = false
 
     player.x_vel = 0 player.y_vel = 0
     player.x_loc = 5 player.y_loc = 50
@@ -319,7 +320,7 @@ function level3:checkCollision(xloc,yloc,xvel,yvel,width,height)
     for k,obs in pairs(obstable) do
         if obs.warpzone then
             if xloc + width > obs.x_left and xloc < obs.x_right and yloc + height > obs.y_top and yloc < obs.y_bottom then
-                self.next_level = true
+                self.nextlevel = true
                 print("Level complete")
             end
         elseif obs.active then

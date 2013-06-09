@@ -134,6 +134,7 @@ function level2:initialise(player)
     self.status = "calm"
     self.nextlevel = false
     self.leveltype = "level"
+    self.gameover = false
 
     player.x_vel = 0 player.y_vel = 0
     player.x_loc = 5 player.y_loc = 50
