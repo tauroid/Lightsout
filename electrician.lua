@@ -104,7 +104,7 @@ function steph:doPhysics()
         self.y_vel = self.y_vel + g
     end
 
-    self.collisions = self.level:checkCollision(self.x_loc-self.width/2,self.y_loc+self.y_offset,self.x_vel,self.y_vel,self.width,self.height,self.level.obstacles)
+    self.collisions = self.level:checkCollision(self.x_loc-self.width/2,self.y_loc+self.y_offset,self.x_vel,self.y_vel,self.width,self.height)
    
     if self.collisions.bottom.exists then
         self.jumping = false
@@ -170,7 +170,7 @@ function steph:startFixing()
     local x_distance = 0
     currentlight, distance, x_distance = unpack(self.level:getNearestLight(self,self.level.lights))
     print("Distance: " ..  distance)
-    if currentlight.lit == true then return end
+    if currentlight.lit == true or self.level.status == "panic" then return end
     if not self.fixing and not self.jumping and distance <= 8 then
         self.fixing = true
         if distance <= 0.5 then

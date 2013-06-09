@@ -4,28 +4,61 @@ level1 = { obstacles = { ground = { name = "ground",
                                     y_top = 70,
                                     y_bottom = 96,
                                     x_left = 0,
-                                    x_right = 150 },
+                                    x_right = 150,
+                                    active = true},
                          leftside = { name = "leftside",
                                   y_top = 0,
                                   y_bottom = 96,
                                   x_left = -10,
-                                  x_right = 0 },
+                                  x_right = 0,
+                                  active = true },
                          rightside = { name = "rightside",
                                   y_top = 0,
                                   y_bottom = 96,
-                                  x_left = 128,
-                                  x_right = 160 } },
+                                  x_left = 150,
+                                  x_right = 160,
+                                  active = true },
+                         rightdoor = { name = "rightdoor",
+                                       y_top = 0,
+                                       y_bottom = 96,
+                                       x_left = 108,
+                                       x_right = 110,
+                                       active = true },
+                         level_2_warp = { name = "level_2_warp",
+                                          y_top = 0,
+                                          y_bottom = 96,
+                                          x_left = 135,
+                                          x_right = 150,
+                                          active = true,
+                                          warpzone = true,
+                                          warp = "level2" } },
            fgimage = { image = 0,
                        filename = "Level1/lv1housebackground.png",
                        x_loc = 0,
                        y_loc = 0 },
-           overlays = { partitions = { image = 0,
+           overlays = { partitions = { name = "partitions",
+                                       image = 0,
                                        filename = "Level1/lv1housepartitions.png",
                                        img_x_loc = 0,
                                        img_y_loc = 0,
-                                       fade = false
+                                       fade = false,
+                                       z = 2
                                      },
-                        housefront = { image = 0,
+                        rightdoor = { name = "rightdoor",
+                                      image = 0,
+                                      filename = "Level1/lv1rightdoor.png",
+                                      img_x_loc = 0,
+                                      img_y_loc = 0,
+                                      x_loc = 108,
+                                      y_loc = 50,
+                                      width = 2,
+                                      height = 19,
+                                      fade = false,
+                                      faderange = 12,
+                                      z = 1
+                                     },
+                        housefront = { name = "housefront",
+                                       image = 0,
                                        filename = "Level1/lv1housefg.png",
                                        img_x_loc = 0,
                                        img_y_loc = 0,
@@ -33,15 +66,37 @@ level1 = { obstacles = { ground = { name = "ground",
                                        y_loc = 42,
                                        width = 87,
                                        height = 29,
-                                       fade = true
-                                     } },
-           props = { lit_interior = { animated = false,
+                                       fade = true,
+                                       faderange = 7.5,
+                                       z = 3
+                                     }
+                         },
+           props = { lit_interior = { name = "lit_interior",
+                                      animated = false,
                                       image = 0,
                                       filename = "Level1/lv1litinterior.png",
                                       x_loc = 0,
                                       y_loc = 0,
-                                      lit_up = true },
-                     grandmother = { animated = true,
+                                      lit_up = true,
+                                      z = 1 },
+                     lining = {       name = "lining",
+                                      animated = false,
+                                      image = 0,
+                                      filename = "Level1/lv1houselining.png",
+                                      x_loc = 0,
+                                      y_loc = 0,
+                                      lit_up = false,
+                                      z = 2 },
+                     skirtingboard = { name = "skirtingboard",
+                                       animated = false,
+                                       image = 0,
+                                       filename = "Level1/lv1skirtingboard.png",
+                                       x_loc = 0,
+                                       y_loc = 0,
+                                       lit_up = true,
+                                       z = 3 },
+                     grandmother = { name = "grandmother",
+                                     animated = true,
                                      animations = { idle = { name = "idle", currentFrame = 1, folder = "Props/Granny/Idle", frames = {} },
                                                     intense = { name = "intense", currentFrame = 1, folder = "Props/Granny/Intense", frames = {} },
                                                     panic = { name = "panic", currentFrame = 1, folder = "Props/Granny/PANIC", frames = {} } },
@@ -51,7 +106,19 @@ level1 = { obstacles = { ground = { name = "ground",
                                      timeSinceLastFrame = 0,
                                      frameDelayms = 160,
                                      curAnim = nil },
-                     wallclock = { animated = true,
+                     cat = { name = "cat",
+                             animated = true,
+                             animations = { idle = { name = "idle", currentFrame = 1, folder = "Props/Cat/Idle", frames = {} },
+                                            intense = { name = "intense", currentFrame = 1, folder = "Props/Cat/Intense", frames = {} },
+                                            panic = { name = "panic", currentFrame = 1, folder = "Props/Cat/PANIC", frames = {} } },
+                             x_loc = 32,
+                             y_loc = 50,
+                             lit_up = true,
+                             timeSinceLastFrame = 0,
+                             frameDelayms = 120,
+                             curAnim = nil },
+                     wallclock = { name = "clock",
+                                   animated = true,
                                    animations = { tick = { name = "tick", currentFrame = 1, folder = "Props/Clock", frames = {} } },
                                    x_loc = 50,
                                    y_loc = 48,
@@ -70,8 +137,12 @@ level1 = { obstacles = { ground = { name = "ground",
                                      lsource_x = 2,
                                      lsource_y = 9,
                                      intensity = 6,
-                                     lit = false } }
-         }
+                                     lit = false } },
+           timetaken = 0,
+           panictime = 15,
+           status = "calm",
+           nextlevel = false,
+           leveltype = "level"}
                         
                        
 function level1:initialise()
@@ -100,16 +171,57 @@ function level1:initialise()
     -- Need manual initialisation of each prop animation
     self.props.grandmother.curAnim = self.props.grandmother.animations.idle
     self.props.wallclock.curAnim = self.props.wallclock.animations.tick
+    self.props.cat.curAnim = self.props.cat.animations.idle
     -- Hurry the fuck up
     self.props.wallclock.timeSinceLastFrame = 2000
 end
 
 function level1:update(delta)
+    if self.status ~= "fixed" and self.status ~= "panic" then
+        self.timetaken = self.timetaken + delta
+    end
     for k,v in pairs(self.props) do
         if v.animated then
             v.timeSinceLastFrame = v.timeSinceLastFrame + delta*1000
         end
     end
+    if self.status == "calm" and self.timetaken/self.panictime >= 0.5 then
+        self:setIntenseStatus()
+        self.status = "intense"
+    end
+    if self.status == "intense" and self.timetaken/self.panictime >= 1 then
+        self:setPanicStatus()
+        self.status = "panic"
+    end
+    if self.status == "panic" and self.props.cat.curAnim.currentFrame == table.getn(self.props.cat.curAnim.frames) then
+        Animation.stop(self.props.cat.curAnim)
+    end
+    if self.status == "panic" and self.props.grandmother.curAnim.currentFrame == table.getn(self.props.grandmother.curAnim.frames) then
+        Animation.stop(self.props.grandmother.curAnim)
+    end
+end
+
+function level1:setCalmStatus()
+    self.props.cat.curAnim = self.props.cat.animations.idle
+    Animation.start(self.props.cat.curAnim)
+    self.props.grandmother.curAnim = self.props.grandmother.animations.idle
+    Animation.start(self.props.grandmother.curAnim)
+    self.props.grandmother.frameDelayms = 160
+end
+    
+function level1:setIntenseStatus()
+    self.props.cat.curAnim = self.props.cat.animations.intense
+    Animation.start(self.props.cat.curAnim)
+    self.props.grandmother.curAnim = self.props.grandmother.animations.intense
+    Animation.start(self.props.grandmother.curAnim)
+    self.props.grandmother.frameDelayms = 120
+end
+
+function level1:setPanicStatus()
+    self.props.cat.curAnim = self.props.cat.animations.panic
+    Animation.start(self.props.cat.curAnim)
+    self.props.grandmother.curAnim = self.props.grandmother.animations.panic
+    Animation.start(self.props.grandmother.curAnim)
 end
 
 function level1:getPropFrame(prop)
@@ -120,7 +232,7 @@ function level1:getPropFrame(prop)
     return prop.frame
 end
 
-function level1:checkCollision(xloc,yloc,xvel,yvel,width,height,obstable)
+function level1:checkCollision(xloc,yloc,xvel,yvel,width,height)
     local collisions = { invalid = false,
                          right = { exists = false, correctloc = 0 },
                          left = { exists = false, correctloc = 0 },
@@ -128,30 +240,38 @@ function level1:checkCollision(xloc,yloc,xvel,yvel,width,height,obstable)
                          top = { exists = false, correctloc = 0 },
                          none = true
                        }
+    obstable = self.obstacles
     for k,obs in pairs(obstable) do
-        if xloc + width > obs.x_left and xloc < obs.x_right and yloc + height > obs.y_top and yloc < obs.y_bottom then
-            collisions.invalid = true
-            collisions.none = false
-        end
-        if xloc + width <= obs.x_left and xloc + xvel + width >= obs.x_left and yloc < obs.y_bottom and yloc + height > obs.y_top then
-            collisions.right.exists = true
-            collisions.right.correctloc = obs.x_left - width
-            collisions.none = false
-        end
-        if xloc >= obs.x_right and xloc + xvel <= obs.x_right and yloc < obs.y_bottom and yloc + height > obs.y_top then
-            collisions.left.exists = true
-            collisions.left.correctloc = obs.x_right
-            collisions.none = false
-        end
-        if yloc + height <= obs.y_top and yloc + yvel + height >= obs.y_top and xloc < obs.x_right and xloc + width > obs.x_left then
-            collisions.bottom.exists = true
-            collisions.bottom.correctloc = obs.y_top - height
-            collisions.none = false
-        end
-        if yloc >= obs.y_bottom and yloc + yvel <= obs.y_bottom and xloc < obs.x_right and xloc + width > obs.x_left then
-            collisions.top.exists = true
-            collisions.top.correctloc = obs.y_bottom
-            collisions.none = false
+        if obs.warpzone and obs.warp == "level2" then
+            if xloc + width > obs.x_left and xloc < obs.x_right and yloc + height > obs.y_top and yloc < obs.y_bottom then
+                self.next_level = true
+                print("Level complete")
+            end
+        elseif obs.active then
+            if xloc + width > obs.x_left and xloc < obs.x_right and yloc + height > obs.y_top and yloc < obs.y_bottom then
+                collisions.invalid = true
+                collisions.none = false
+            end
+            if xloc + width <= obs.x_left and xloc + xvel + width >= obs.x_left and yloc < obs.y_bottom and yloc + height > obs.y_top then
+                collisions.right.exists = true
+                collisions.right.correctloc = obs.x_left - width
+                collisions.none = false
+            end
+            if xloc >= obs.x_right and xloc + xvel <= obs.x_right and yloc < obs.y_bottom and yloc + height > obs.y_top then
+                collisions.left.exists = true
+                collisions.left.correctloc = obs.x_right
+                collisions.none = false
+            end
+            if yloc + height <= obs.y_top and yloc + yvel + height >= obs.y_top and xloc < obs.x_right and xloc + width > obs.x_left then
+                collisions.bottom.exists = true
+                collisions.bottom.correctloc = obs.y_top - height
+                collisions.none = false
+            end
+            if yloc >= obs.y_bottom and yloc + yvel <= obs.y_bottom and xloc < obs.x_right and xloc + width > obs.x_left then
+                collisions.top.exists = true
+                collisions.top.correctloc = obs.y_bottom
+                collisions.none = false
+            end
         end
     end
     --print("Projected: " .. xloc + xvel .. " " .. yloc + yvel)
@@ -201,4 +321,8 @@ end
 
 function level1:fixLight(light)
     light.lit = true
+    self.obstacles.rightdoor.active = false
+    self.overlays.rightdoor.fade = true
+    self.status = "fixed"
+    self:setCalmStatus()
 end

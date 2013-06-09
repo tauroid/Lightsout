@@ -35,14 +35,20 @@ function Animation.start(anim)
     anim.currentFrame = 1
 end
 
+function Animation.stop(anim)
+    anim.currentFrame = 0
+end
+
 -- Steps the frame forwards
 function Animation.getFrame(anim,frameowner)
     local previousFrame = anim.currentFrame
-    anim.currentFrame = anim.currentFrame + 1
-    if anim.currentFrame > table.getn(anim.frames) then
-        anim.currentFrame = 1
+    if anim.currentFrame ~= 0 then
+        anim.currentFrame = anim.currentFrame + 1
+        if anim.currentFrame > table.getn(anim.frames) then
+            anim.currentFrame = 1
+        end
+        frameowner.frame = anim.frames[previousFrame]
     end
-    frameowner.frame = anim.frames[previousFrame]
 end
 
 function Animation.getFramebyNumber(anim,frameowner,number)

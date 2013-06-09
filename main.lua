@@ -1,15 +1,15 @@
 require('electrician')
+require('mainmenu')
 require('level1')
-screen = { width = 640,
-           height = 480 }
-camera = { x_loc = 0,
-           y_loc = 0,
-           scale = 1.2 }
+require('level2')
+require('hud')
+require('window')
 bgimage = { image = 0,
             filename = "Sunset.png",
             x_loc = 0,
             y_loc = 0,
             scale = 1.3}
+score = 0
 pixelsize = 5
 thresholdintensity = 5
 paused = false
@@ -20,13 +20,8 @@ function love.load()
     love.graphics.setCaption("Filament Failure")
     bgimage.image = love.graphics.newImage(bgimage.filename)
     bgimage.image:setFilter("nearest","nearest")
-    definePixelShaders()
-    e = steph
-    level = level1
-    level:initialise()
-    e:initialise()
-    esprite = e:getFrame()
-    e.level = level1
+    mainmenu:initialise()
+    level = mainmenu
 end
 
 function love.keypressed(key)
@@ -40,56 +35,108 @@ function love.keyreleased(key)
 end
 
 function love.draw()
-    if not paused then
-        drawBackground()
-        drawForeground(level)
-        updateLitShader(level)
-        drawProps(level)
-        drawLights(level)
-        esprite = e:getFrame()
-        love.graphics.setPixelEffect(litShader)
-        litShader:send("darken",.4)
-        if esprite ~= nil then
-            love.graphics.draw(esprite,
-                            (e.x_loc*pixelsize-camera.x_loc)*camera.scale,
-                            (e.y_loc*pixelsize-camera.y_loc)*camera.scale,
-                            0,
-                            e.direction*pixelsize*camera.scale,
-                            pixelsize*camera.scale,5.5)
-        end
-        love.graphics.setPixelEffect()
-        drawLevelOverlays(level)
+    if not paused and level.leveltype == "level" then
+        drawLevel()
+    elseif level.leveltype == "mainmenu" then
+        drawMainMenu()
     end
 end
 
 function love.update()
-    if not paused then
-        local delta = love.timer.getDelta()
-        level:update(delta)
-        e:update(delta)
-        e:doPhysics()
-        updateCamera()
+    if not paused and level.leveltype == "level" then
+        updateLevel()
+    elseif level.leveltype == "mainmenu" then
+        level:update()
+        if level.play then loadLevel(level1) end
     end
 end
 
 function processInput(input)
-    if input.intype == "key" then
-        if input.keycode == "escape" then love.event.quit() end
-        if input.pressed == 1 and (input.keycode == "a" or input.keycode == "left") then
-            e:moveLeft()
-        elseif input.pressed == 0 and (input.keycode == "a" or input.keycode == "left") then
-            e.movingLeft = false
-        elseif input.pressed == 1 and (input.keycode == "d" or input.keycode == "right") then
-            e:moveRight()
-        elseif input.pressed == 0 and (input.keycode == "d" or input.keycode == "right") then
-            e.movingRight = false
-        elseif input.pressed == 1 and (input.keycode == "w" or input.keycode == "up") then
-            e:jump()
-        elseif input.pressed == 1 and input.keycode == " " then
-            e:startFixing()
-        elseif input.pressed == 1 and input.keycode == "p" then
-            paused = 1
+    if level.leveltype == "level" then
+        if input.intype == "key" then
+            if input.keycode == "escape" then love.event.quit() end
+            if input.pressed == 1 and (input.keycode == "a" or input.keycode == "left") then
+                e:moveLeft()
+            elseif input.pressed == 0 and (input.keycode == "a" or input.keycode == "left") then
+                e.movingLeft = false
+            elseif input.pressed == 1 and (input.keycode == "d" or input.keycode == "right") then
+                e:moveRight()
+            elseif input.pressed == 0 and (input.keycode == "d" or input.keycode == "right") then
+                e.movingRight = false
+            elseif input.pressed == 1 and (input.keycode == "w" or input.keycode == "up") then
+                e:jump()
+            elseif input.pressed == 1 and input.keycode == " " then
+                e:startFixing()
+            elseif input.pressed == 1 and input.keycode == "p" and not paused then
+                paused = true
+            elseif input.pressed == 1 and input.keycode == "p" and paused then
+                paused = false
+            end
         end
+    end
+end
+
+function drawMainMenu()
+    local mmbgimage = level.bgimage:getFrame()
+    if mmbgimage ~= nil then
+        love.graphics.draw(mmbgimage,0,0)
+    end
+    local pbimage = level.play_button:getFrame()
+    if pbimage ~= nil then
+        love.graphics.draw(pbimage,level.play_button.x_loc,level.play_button.y_loc)
+    end
+end
+
+function loadLevel(thelevel)
+    definePixelShaders()
+    e = steph
+    level = thelevel
+    level:initialise()
+    hud:initialise()
+    e:initialise()
+    esprite = e:getFrame()
+    e.level = thelevel
+end
+
+function drawLevel()
+    drawBackground()
+    drawForeground(level)
+    updateLitShader(level)
+    drawProps(level)
+    drawLights(level)
+    esprite = e:getFrame()
+    love.graphics.setPixelEffect(litShader)
+    litShader:send("darken",.4)
+    if esprite ~= nil then
+        love.graphics.draw(esprite,
+                        (e.x_loc*pixelsize-camera.x_loc)*camera.scale,
+                        (e.y_loc*pixelsize-camera.y_loc)*camera.scale,
+                        0,
+                        e.direction*pixelsize*camera.scale,
+                        pixelsize*camera.scale,5.5)
+    end
+    love.graphics.setPixelEffect()
+    drawOverlays(level)
+    drawHUD()
+end
+
+function updateLevel()
+    if level.nextlevel then
+        score = score + 50 - 50*timetaken/panictime
+    end
+    local delta = love.timer.getDelta()
+    level:update(delta)
+    hud:update(delta,level.timetaken/level.panictime)
+    e:update(delta)
+    e:doPhysics()
+    updateCamera()
+end
+
+function drawHUD()
+    love.graphics.setPixelEffect()
+    local image = hud:getFrame()
+    if image ~= nil then
+        love.graphics.draw(image,0,0,0,pixelsize)
     end
 end
 
@@ -131,7 +178,22 @@ function updateLitShader(thelevel)
 end
 
 function drawProps(thelevel)
+    local renderorder = {}
     for k,v in pairs(thelevel.props) do
+        if v.z ~= nil then
+            renderorder[v.z] = v
+        end
+    end
+    local i = table.getn(renderorder) + 1
+    for k,v in pairs(thelevel.props) do
+        if v.z == nil then
+            renderorder[i] = v
+            i = i + 1
+        end
+    end
+
+    for i=1,table.getn(renderorder) do
+        local v = renderorder[i]
         if v.ignore_shading then
             love.graphics.setPixelEffect()
         elseif v.lit_up and lightsources > 0 then
@@ -185,11 +247,26 @@ function drawLights(thelevel)
     love.graphics.setPixelEffect()
 end
 
-function drawLevelOverlays(thelevel)
+function drawOverlays(thelevel)
     love.graphics.setPixelEffect(overlayShader)
+    local renderorder = {}
     for k,v in pairs(thelevel.overlays) do
+        if v.z ~= nil then
+            renderorder[v.z] = v
+        end
+    end
+    local i = table.getn(renderorder) + 1
+    for k,v in pairs(thelevel.overlays) do
+        if v.z == nil then
+            renderorder[i] = v
+            i = i + 1
+        end
+    end
+
+    for i=1,table.getn(renderorder) do
+        local v = renderorder[i]
         if v.fade then
-            local distance = thelevel:getFadeDistance(e,v,7.5)
+            local distance = thelevel:getFadeDistance(e,v,v.faderange)
             overlayShader:send("distance",distance)
         else
             overlayShader:send("distance",1)
