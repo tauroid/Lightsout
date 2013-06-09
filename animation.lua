@@ -44,3 +44,7 @@ function Animation.getFrame(anim,frameowner)
     end
     frameowner.frame = anim.frames[previousFrame]
 end
+
+function Animation.getFramebyNumber(anim,frameowner,number)
+    frameowner.frame = anim.frames[number]
+end

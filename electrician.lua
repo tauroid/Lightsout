@@ -7,10 +7,10 @@ steph = {
                    idle2 = { name = "idle2", currentFrame = 1, frames = {} },
                    fixing = { name = "fixing", currentFrame = 1, frames = {} },
                    eating = { name = "eating", currentFrame = 1, frames = {} } },
-    curAnim = 0,
+    curAnim = nil,
     x_loc = 10,
     y_loc = 10,
-    x_vel = 0.5,
+    x_vel = 0,
     y_vel = 0,
     width = 5,
     height = 15,
@@ -22,6 +22,7 @@ steph = {
     stopped = false,
     fixing = false,
     fixtime = 3,
+    currentlight = nil,
     timeSinceFixStart = 0,
     direction = 1,
     frameDelayms = 80,
@@ -103,7 +104,7 @@ function steph:doPhysics()
         self.y_vel = self.y_vel + g
     end
 
-    self.collisions = self.level:checkCollision(self.x_loc-5.5+self.x_offset,self.y_loc+self.y_offset,self.x_vel,self.y_vel,self.width,self.height)
+    self.collisions = self.level:checkCollision(self.x_loc-self.width/2,self.y_loc+self.y_offset,self.x_vel,self.y_vel,self.width,self.height,self.level.obstacles)
    
     if self.collisions.bottom.exists then
         self.jumping = false
@@ -112,11 +113,11 @@ function steph:doPhysics()
     end
     if self.collisions.left.exists then
         self.x_vel = 0
-        self.x_loc = self.collisions.left.correctloc+5.5-self.x_offset
+        self.x_loc = self.collisions.left.correctloc+self.width/2
     end
     if self.collisions.right.exists then
         self.x_vel = 0
-        self.x_loc = self.collision.right.correctloc-5.5+self.x_offset
+        self.x_loc = self.collisions.right.correctloc+self.width/2
     end
     if self.collisions.none then
         self.jumping = true
@@ -165,28 +166,58 @@ function steph:getFrame()
 end
 
 function steph:startFixing()
-    if not self.fixing and not self.jumping then
+    local distance
+    local x_distance = 0
+    currentlight, distance, x_distance = unpack(self.level:getNearestLight(self,self.level.lights))
+    print("Distance: " ..  distance)
+    if currentlight.lit == true then return end
+    if not self.fixing and not self.jumping and distance <= 8 then
         self.fixing = true
-        self.x_vel = 0
-        Animation.start(self.animations.fixing)
-        self.curAnim = self.animations.fixing
+        if distance <= 0.5 then
+            self.x_vel = 0
+            Animation.start(self.animations.fixing)
+            self.curAnim = self.animations.fixing
+        else
+            Animation.start(self.animations.walk)
+            self.curAnim = self.animations.walk
+            if x_distance >= 0 then
+                self.x_vel = -.5
+                direction = -1
+            else
+                self.x_vel = .5
+                direction = 1
+            end
+        end
     end
 end
 
 function steph:continueFixing(delta)
-    if self.timeSinceFixStart > self.fixtime then
-        self.fixing = false
-        self.timeSinceFixStart = 0
-        self.curAnim = self.animations.idle2
-        Animation.start(self.animations.idle2)
-        return
-    else
-        self.timeSinceFixStart = self.timeSinceFixStart + delta
-    end
-    if self.fixtime - self.timeSinceFixStart < self.frameDelayms*9/1000 and self.fixtime - self.timeSinceFixStart > 0 then
-        if self.curAnim.currentFrame < 16 then
-            self.currentFrame = 16
-            self.timeSinceFixStart = self.fixtime - self.frameDelayms*9/1000
+    local lightdetails = self.level:getNearestLight(self,self.level.lights)
+    local x_distance = lightdetails[3]
+    if math.abs(x_distance) < 0.5 then
+        if self.x_vel ~= 0 then
+            self.x_vel = 0 
+            self.x_loc = self.x_loc - x_distance
         end
-    elseif self.curAnim.currentFrame > 15 then self.curAnim.currentFrame = 10 end
+        if self.curAnim.name ~= "fixing" then
+            Animation.start(self.animations.fixing)
+            self.curAnim = self.animations.fixing
+        end
+        if self.timeSinceFixStart > self.fixtime then
+            self.fixing = false
+            self.timeSinceFixStart = 0
+            self.curAnim = self.animations.idle2
+            Animation.start(self.animations.idle2)
+            return
+        else
+            self.timeSinceFixStart = self.timeSinceFixStart + delta
+        end
+        if self.fixtime - self.timeSinceFixStart < self.frameDelayms*9/1000 and self.fixtime - self.timeSinceFixStart > 0 then
+            if self.curAnim.currentFrame < 16 and self.curAnim.currentFrame > 2 then
+                self.currentFrame = 16
+                self.timeSinceFixStart = self.fixtime - self.frameDelayms*9/1000
+                self.level:fixLight(currentlight)
+            end
+        elseif self.curAnim.currentFrame > 15 then self.curAnim.currentFrame = 10 end
+    end
 end
