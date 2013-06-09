@@ -26,7 +26,14 @@ function level2:initialise(player)
                                        y_bottom = 96,
                                        x_left = 108,
                                        x_right = 110,
-                                       active = true } }
+                                       active = true },
+                         level_3_warp = { name = "level_3_warp",
+                                          y_top = 0,
+                                          y_bottom = 96,
+                                          x_left = 135,
+                                          x_right = 150,
+                                          active = true,
+                                          warpzone = true }}
     self.fgimage = { image = 0,
                        filename = "Level2/lv2fg.png",
                        x_loc = 0,
@@ -81,7 +88,18 @@ function level2:initialise(player)
                                       x_loc = 0,
                                       y_loc = 0,
                                       lit_up = false,
-                                      z = 2 } }
+                                      z = 2 },
+                     vicar = { name = "vicar",
+                                     animated = true,
+                                     animations = { idle = { name = "idle", currentFrame = 1, folder = "Props/Vicar/Idle", frames = {} },
+                                                    intense = { name = "intense", currentFrame = 1, folder = "Props/Vicar/Intense", frames = {} },
+                                                    panic = { name = "panic", currentFrame = 1, folder = "Props/Vicar/PANIC", frames = {} } },
+                                     x_loc = 55,
+                                     y_loc = 50,
+                                     lit_up = true,
+                                     timeSinceLastFrame = 0,
+                                     frameDelayms = 160,
+                                     curAnim = nil } }
     self.lights = { left_room = {   name = "left_room",
                                     image_on = 0,
                                     image_off = 0,
@@ -112,13 +130,14 @@ function level2:initialise(player)
                                      intensity = 6,
                                      lit = false } }
     self.timetaken = 0
-    self.panictime = 15
+    self.panictime = 12
     self.status = "calm"
     self.nextlevel = false
     self.leveltype = "level"
 
     player.x_vel = 0 player.y_vel = 0
     player.x_loc = 5 player.y_loc = 50
+
     self.fgimage.image = love.graphics.newImage(self.fgimage.filename)
     self.fgimage.image:setFilter("nearest","nearest")
     for k,v in pairs(self.overlays) do
@@ -141,6 +160,8 @@ function level2:initialise(player)
         v.image_on:setFilter("nearest","nearest")
         v.image_off:setFilter("nearest","nearest")
     end
+    
+    self.props.vicar.curAnim = self.props.vicar.animations.idle
 end
 
 function level2:update(delta)
@@ -165,11 +186,32 @@ function level2:update(delta)
         end
     end
     if self.status == "calm" and self.timetaken/self.panictime >= 0.5 then
+        self:setIntenseStatus()
         self.status = "intense"
     end
     if self.status == "intense" and self.timetaken/self.panictime >= 1 then
+        self:setPanicStatus()
         self.status = "panic"
     end
+    
+    if self.status == "panic" and self.props.vicar.curAnim.currentFrame == table.getn(self.props.vicar.curAnim.frames) then
+        Animation.stop(self.props.vicar.curAnim)
+    end
+end
+
+function level2:setCalmStatus()
+    Animation.start(self.props.vicar.curAnim)
+    self.props.vicar.curAnim = self.props.vicar.animations.idle
+end
+    
+function level2:setIntenseStatus()
+    self.props.vicar.curAnim = self.props.vicar.animations.intense
+    Animation.start(self.props.vicar.curAnim)
+end
+
+function level2:setPanicStatus()
+    self.props.vicar.curAnim = self.props.vicar.animations.panic
+    Animation.start(self.props.vicar.curAnim)
 end
 
 function level2:checkCollision(xloc,yloc,xvel,yvel,width,height)
@@ -182,9 +224,9 @@ function level2:checkCollision(xloc,yloc,xvel,yvel,width,height)
                        }
     obstable = self.obstacles
     for k,obs in pairs(obstable) do
-        if obs.warpzone and obs.warp == "level2" then
+        if obs.warpzone then
             if xloc + width > obs.x_left and xloc < obs.x_right and yloc + height > obs.y_top and yloc < obs.y_bottom then
-                self.next_level = true
+                self.nextlevel = true
                 print("Level complete")
             end
         elseif obs.active then
@@ -278,5 +320,6 @@ function level2:fixLight(light)
         self.status = "fixed"
         self.obstacles.rightdoor.active = false
         self.overlays.rightdoor.fade = true
+        self:setCalmStatus()
     end
 end

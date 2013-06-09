@@ -33,8 +33,7 @@ function level1:initialise(player)
                                           x_left = 135,
                                           x_right = 150,
                                           active = true,
-                                          warpzone = true,
-                                          warp = "level2" } }
+                                          warpzone = true } }
     self.fgimage = { image = 0,
                        filename = "Level1/lv1housebackground.png",
                        x_loc = 0,
@@ -142,14 +141,14 @@ function level1:initialise(player)
                                      intensity = 6,
                                      lit = false } }
     self.timetaken = 0
-    self.panictime = 15
+    self.panictime = 12
     self.status = "calm"
     self.nextlevel = false
     self.gameover = false
     self.leveltype = "level"
            
     player.y_loc = 45 player.x_loc = 5
-    
+
     self.fgimage.image = love.graphics.newImage(self.fgimage.filename)
     self.fgimage.image:setFilter("nearest","nearest")
     for k,v in pairs(self.overlays) do
@@ -249,7 +248,7 @@ function level1:checkCollision(xloc,yloc,xvel,yvel,width,height)
                        }
     obstable = self.obstacles
     for k,obs in pairs(obstable) do
-        if obs.warpzone and obs.warp == "level2" then
+        if obs.warpzone then
             if xloc + width > obs.x_left and xloc < obs.x_right and yloc + height > obs.y_top and yloc < obs.y_bottom then
                 self.nextlevel = true
                 print("Level complete")

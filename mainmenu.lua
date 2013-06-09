@@ -21,6 +21,10 @@ mainmenu = { bgimage = { animation = { name = "flicker", folder = "Main_menu/bgi
 
 
 function mainmenu:initialise()
+    self.music = love.audio.newSource("Music/Theme.ogg")
+    love.audio.setVolume(1)
+    self.music:setLooping(true)
+    love.audio.play(self.music)
     Animation.generate(self.bgimage.animation.folder,self.bgimage.animation.frames)
     Animation.generate(self.play_button.animation.folder,self.play_button.animation.frames)
     if self.play_button.animation.frames[1] ~= nil then
@@ -55,7 +59,9 @@ function mainmenu.play_button:getFrame()
        love.mouse.getX() <= self.x_loc + self.width - self.x_offset and
        love.mouse.getY() >= self.y_loc + self.y_offset and
        love.mouse.getY() <= self.y_loc + self.height - self.y_offset then
-        if love.mouse.isDown("l") then mainmenu.play = true end
+        if love.mouse.isDown("l") then
+            mainmenu.play = true 
+        end
         return self.animation.frames[2]
     else
         return self.animation.frames[1]

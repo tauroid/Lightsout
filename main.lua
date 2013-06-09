@@ -2,6 +2,7 @@ require('electrician')
 require('mainmenu')
 require('level1')
 require('level2')
+require('level3')
 require('hud')
 require('window')
 bgimage = { image = 0,
@@ -16,7 +17,7 @@ darken = .7
 paused = false
 g = .1
 levelno = 1
-levels = {level1, level2}
+levels = {level1, level2, level3}
 
 function love.load()
     love.graphics.setMode(screen.width,screen.height)
@@ -63,7 +64,7 @@ end
 function processInput(input)
     if level.leveltype == "level" then
         if input.intype == "key" then
-            if input.keycode == "escape" then love.event.quit() end
+            if input.keycode == "escape" then level = mainmenu end
             if input.pressed == 1 and (input.keycode == "a" or input.keycode == "left") then
                 e:moveLeft()
             elseif input.pressed == 0 and (input.keycode == "a" or input.keycode == "left") then
@@ -74,6 +75,8 @@ function processInput(input)
                 e.movingRight = false
             elseif input.pressed == 1 and (input.keycode == "w" or input.keycode == "up") then
                 e:jump()
+            elseif input.pressed == 1 and (input.keycode == "s" or input.keycode == "down") then
+                e:descend()
             elseif input.pressed == 1 and input.keycode == " " then
                 e:startFixing()
             elseif input.pressed == 1 and input.keycode == "p" and not paused then
@@ -139,6 +142,7 @@ function updateLevel()
         levelno = 1
         return
     end
+    if level.status == "panic" then hud.game_over = true end
     if level.nextlevel then
         print("going next")
         score = score + 50*levelno - 50*levelno*level.timetaken/level.panictime
