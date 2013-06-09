@@ -27,8 +27,8 @@ level1 = { obstacles = { ground = { name = "ground",
                                        img_x_loc = 0,
                                        img_y_loc = 0,
                                        fade = false
-                                     } }
-           props = { bulb = { image = 0,
+                                     } },
+           props = { bulb = { image = 0 }}
                               
          }
                         
