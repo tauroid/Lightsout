@@ -1,16 +1,16 @@
 require('animation')
-hud = { canvas = nil,
-        panic_bar = { name = "panic_bar",
+hud = {}
+
+function hud:initialise()
+    self.canvas = nil
+    self.panic_bar = { name = "panic_bar",
                       graphics = { folder = "HUD/Panic_Bar", currentFrame = 1, frames = {} },
                       x_loc = 8,
                       y_loc = 70,
-                      paniclevel = 0 },
-        frameDelayms = 100,
-        timeSinceLastFrame = 0,
-        game_over = false
-      }
-
-function hud:initialise()
+                      paniclevel = 0 }
+    self.frameDelayms = 100
+    self.timeSinceLastFrame = 0
+    self.game_over = false
     Animation.generate(self.panic_bar.graphics.folder,self.panic_bar.graphics.frames)
     self.canvas = love.graphics.newCanvas(128,96)
 end

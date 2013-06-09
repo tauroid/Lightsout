@@ -1,37 +1,37 @@
 require("animation")
 
-steph = {
-    animations = { walk = { name = "walk", currentFrame = 1, frames = {} },
+steph = {}
+
+function steph:initialise()
+    self.animations = { walk = { name = "walk", currentFrame = 1, frames = {} },
                    jumping = { name = "jumping", currentFrame = 1, frames = {} },
                    idle = { name = "idle", currentFrame = 1, frames = {} },
                    idle2 = { name = "idle2", currentFrame = 1, frames = {} },
                    fixing = { name = "fixing", currentFrame = 1, frames = {} },
-                   eating = { name = "eating", currentFrame = 1, frames = {} } },
-    curAnim = nil,
-    x_loc = 10,
-    y_loc = 10,
-    x_vel = 0,
-    y_vel = 0,
-    width = 5,
-    height = 15,
-    x_offset = 3,
-    y_offset = 5,
-    jumping = false,
-    movingLeft = false,
-    movingRight = false,
-    stopped = false,
-    fixing = false,
-    fixtime = 3,
-    currentlight = nil,
-    timeSinceFixStart = 0,
-    direction = 1,
-    frameDelayms = 80,
-    timeSinceLastFrame = 0,
-    collisions = {},
-    level = 0
-}
-
-function steph:initialise()
+                   eating = { name = "eating", currentFrame = 1, frames = {} } }
+    self.curAnim = nil
+    self.x_loc = 10
+    self.y_loc = 10
+    self.x_vel = 0
+    self.y_vel = 0
+    self.width = 5
+    self.height = 15
+    self.x_offset = 3
+    self.y_offset = 5
+    self.jumping = false
+    self.movingLeft = false
+    self.movingRight = false
+    self.stopped = false
+    self.fixing = false
+    self.fixtime = 3
+    self.currentlight = nil
+    self.timeSinceFixStart = 0
+    self.direction = 1
+    self.frameDelayms = 80
+    self.timeSinceLastFrame = 0
+    self.collisions = {}
+    self.level = 0
+    
     Animation.generate("Animations/Walk",self.animations.walk.frames)
     Animation.generate("Animations/Jumping_1",self.animations.jumping.frames)
     Animation.generate("Animations/Idle_1",self.animations.idle.frames)

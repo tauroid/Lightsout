@@ -12,16 +12,21 @@ bgimage = { image = 0,
 score = 0
 pixelsize = 5
 thresholdintensity = 5
+darken = .7
 paused = false
 g = .1
+levelno = 1
+levels = {level1, level2}
 
 function love.load()
     love.graphics.setMode(screen.width,screen.height)
     love.graphics.setCaption("Filament Failure")
     bgimage.image = love.graphics.newImage(bgimage.filename)
     bgimage.image:setFilter("nearest","nearest")
+    definePixelShaders()
     mainmenu:initialise()
     level = mainmenu
+    e = steph
 end
 
 function love.keypressed(key)
@@ -47,7 +52,11 @@ function love.update()
         updateLevel()
     elseif level.leveltype == "mainmenu" then
         level:update()
-        if level.play then loadLevel(level1) end
+        if level.play then
+            level.play = false
+            enterGame()
+            loadLevel(level1) 
+        end
     end
 end
 
@@ -85,16 +94,20 @@ function drawMainMenu()
     if pbimage ~= nil then
         love.graphics.draw(pbimage,level.play_button.x_loc,level.play_button.y_loc)
     end
+    local qbimage = level.quit_button:getFrame()
+    if qbimage ~= nil then
+        love.graphics.draw(qbimage,level.quit_button.x_loc,level.quit_button.y_loc)
+    end
+end
+
+function enterGame()
+    hud:initialise()
+    e:initialise()
 end
 
 function loadLevel(thelevel)
-    definePixelShaders()
-    e = steph
     level = thelevel
-    level:initialise()
-    hud:initialise()
-    e:initialise()
-    esprite = e:getFrame()
+    level:initialise(e)
     e.level = thelevel
 end
 
@@ -121,8 +134,21 @@ function drawLevel()
 end
 
 function updateLevel()
+    if level.gameover then
+        level = mainmenu
+        levelno = 1
+        return
+    end
     if level.nextlevel then
-        score = score + 50 - 50*timetaken/panictime
+        print("going next")
+        score = score + 50*levelno - 50*levelno*level.timetaken/level.panictime
+        levelno = levelno + 1
+        if levelno <= table.getn(levels) then
+            print("going to level " .. levelno)
+            local nextlevel = levels[levelno]
+            hud:initialise()
+            loadLevel(nextlevel)
+        end
     end
     local delta = love.timer.getDelta()
     level:update(delta)
@@ -150,7 +176,7 @@ function drawBackground()
     end
 end
 function drawForeground(thelevel)
-    darkenShader:send("darken",.7)
+    darkenShader:send("darken",darken)
     love.graphics.setPixelEffect(darkenShader)
     if thelevel.fgimage.image ~= nil then
         love.graphics.draw(thelevel.fgimage.image,
@@ -197,10 +223,10 @@ function drawProps(thelevel)
         if v.ignore_shading then
             love.graphics.setPixelEffect()
         elseif v.lit_up and lightsources > 0 then
-            litShader:send("darken",.7)
+            litShader:send("darken",darken)
             love.graphics.setPixelEffect(litShader)
         else
-            darkenShader:send("darken",.7)
+            darkenShader:send("darken",darken)
             love.graphics.setPixelEffect(darkenShader)
         end
         local image
@@ -222,10 +248,10 @@ end
 function drawLights(thelevel)
     for k,v in pairs(thelevel.lights) do
         if lightsources > 0 then
-            litShader:send("darken",.7)
+            litShader:send("darken",darken)
             love.graphics.setPixelEffect(litShader)
         else
-            darkenShader:send("darken",.7)
+            darkenShader:send("darken",darken)
             love.graphics.setPixelEffect(darkenShader)
         end
         if v.lit then
@@ -352,9 +378,9 @@ function definePixelShaders()
         }
     ]]
     overlayShader:send("distance",1)
-    overlayShader:send("darken",.7)
-    darkenShader:send("darken",.7)
-    litShader:send("darken",.7)
+    overlayShader:send("darken",darken)
+    darkenShader:send("darken",darken)
+    litShader:send("darken",darken)
     litShader:send("pixelsize",pixelsize)
     litShader:send("thresholdintensity",thresholdintensity)
 end

@@ -1,6 +1,9 @@
 require('animation')
 
-level1 = { obstacles = { ground = { name = "ground",
+level1 = {}             
+                       
+function level1:initialise(player)
+    self.obstacles = { ground = { name = "ground",
                                     y_top = 70,
                                     y_bottom = 96,
                                     x_left = 0,
@@ -31,12 +34,12 @@ level1 = { obstacles = { ground = { name = "ground",
                                           x_right = 150,
                                           active = true,
                                           warpzone = true,
-                                          warp = "level2" } },
-           fgimage = { image = 0,
+                                          warp = "level2" } }
+    self.fgimage = { image = 0,
                        filename = "Level1/lv1housebackground.png",
                        x_loc = 0,
-                       y_loc = 0 },
-           overlays = { partitions = { name = "partitions",
+                       y_loc = 0 }
+    self.overlays = { partitions = { name = "partitions",
                                        image = 0,
                                        filename = "Level1/lv1housepartitions.png",
                                        img_x_loc = 0,
@@ -70,8 +73,8 @@ level1 = { obstacles = { ground = { name = "ground",
                                        faderange = 7.5,
                                        z = 3
                                      }
-                         },
-           props = { lit_interior = { name = "lit_interior",
+                         }
+    self.props = { lit_interior = { name = "lit_interior",
                                       animated = false,
                                       image = 0,
                                       filename = "Level1/lv1litinterior.png",
@@ -125,8 +128,8 @@ level1 = { obstacles = { ground = { name = "ground",
                                    lit_up = true,
                                    timeSinceLastFrame = 0,
                                    frameDelayms = 2000,
-                                   curAnim = nil } },
-           lights = { middle_room = { image_on = 0,
+                                   curAnim = nil } }
+    self.lights = { middle_room = { image_on = 0,
                                      image_off = 0,
                                      filename_on = "Props/Light.png",
                                      filename_off = "Props/Light_broken.png",
@@ -137,15 +140,16 @@ level1 = { obstacles = { ground = { name = "ground",
                                      lsource_x = 2,
                                      lsource_y = 9,
                                      intensity = 6,
-                                     lit = false } },
-           timetaken = 0,
-           panictime = 15,
-           status = "calm",
-           nextlevel = false,
-           leveltype = "level"}
-                        
-                       
-function level1:initialise()
+                                     lit = false } }
+    self.timetaken = 0
+    self.panictime = 15
+    self.status = "calm"
+    self.nextlevel = false
+    self.gameover = false
+    self.leveltype = "level"
+           
+    player.y_loc = 45 player.x_loc = 5
+    
     self.fgimage.image = love.graphics.newImage(self.fgimage.filename)
     self.fgimage.image:setFilter("nearest","nearest")
     for k,v in pairs(self.overlays) do
@@ -168,6 +172,7 @@ function level1:initialise()
         v.image_on:setFilter("nearest","nearest")
         v.image_off:setFilter("nearest","nearest")
     end
+
     -- Need manual initialisation of each prop animation
     self.props.grandmother.curAnim = self.props.grandmother.animations.idle
     self.props.wallclock.curAnim = self.props.wallclock.animations.tick
@@ -177,8 +182,10 @@ function level1:initialise()
 end
 
 function level1:update(delta)
-    if self.status ~= "fixed" and self.status ~= "panic" then
+    if self.status ~= "fixed" and self.timetaken < self.panictime + 6 then
         self.timetaken = self.timetaken + delta
+    elseif self.timetaken >= self.panictime + 6 then
+        self.gameover = true
     end
     for k,v in pairs(self.props) do
         if v.animated then
@@ -244,7 +251,7 @@ function level1:checkCollision(xloc,yloc,xvel,yvel,width,height)
     for k,obs in pairs(obstable) do
         if obs.warpzone and obs.warp == "level2" then
             if xloc + width > obs.x_left and xloc < obs.x_right and yloc + height > obs.y_top and yloc < obs.y_bottom then
-                self.next_level = true
+                self.nextlevel = true
                 print("Level complete")
             end
         elseif obs.active then
