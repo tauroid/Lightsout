@@ -261,7 +261,9 @@ function steph:continueFixing(delta)
             if self.curAnim.currentFrame < 16 and self.curAnim.currentFrame > 2 then
                 self.currentFrame = 16
                 self.timeSinceFixStart = self.fixtime - self.frameDelayms*9/1000
-                self.level:fixLight(currentlight)
+                if self.level.status ~= "panic" then
+                    self.level:fixLight(currentlight)
+                end
             end
         elseif self.curAnim.currentFrame > 15 then self.curAnim.currentFrame = 10 end
     end
